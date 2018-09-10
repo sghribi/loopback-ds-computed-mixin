@@ -1,6 +1,6 @@
 {
   "name": "loopback-ds-computed-mixin",
-  "version": "0.0.0-development",
+  "version": "2.0.5",
   "description": "A mixin for the LoopBack framework that adds computed properties to a model.",
   "keywords": [
     "loopback",

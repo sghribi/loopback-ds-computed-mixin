@@ -32,15 +32,21 @@ const Item = loopback.PersistedModel.extend('item', {
         readonly: 'computedReadonly',
         requestedAt: 'computedRequestedAt',
         promised: 'computedPromised',
+        promisedWithOption: 'computedPromisedWithOption',
       },
     },
   },
 })
 
+const testOption = {
+  skipFilters: true,
+}
+
 // Define computed property callbacks.
 Item.computedReadonly = item => Boolean(item.status === 'archived')
 Item.computedRequestedAt = () => now
 Item.computedPromised = item => Promise.resolve(`${item.name}: As promised I get back to you!`)
+Item.computedPromisedWithOption = (item, option) => option.skipFilters
 
 // Attach model to db.
 Item.attachTo(dbConnector)
@@ -70,7 +76,7 @@ describe('loopback computed property', function() {
   })
 
   before(function() {
-    return Promise.join(Item.findById(this.itemOne.id), Item.findById(this.itemTwo.id), (itemOne, itemTwo) => {
+    return Promise.join(Item.findById(this.itemOne.id), Item.findById(this.itemTwo.id, null, testOption), (itemOne, itemTwo) => {
       this.itemOne = itemOne
       this.itemTwo = itemTwo
     })
@@ -86,6 +92,11 @@ describe('loopback computed property', function() {
   it('should set the model property to the value resolved by the defined callback\'s promise', function() {
     expect(this.itemOne.promised).to.equal('Item 1: As promised I get back to you!')
     expect(this.itemTwo.promised).to.equal('Item 2: As promised I get back to you!')
+  })
+
+  it('should set the model property to the value resolved by the defined callback\'s promise with option', function() {
+    expect(this.itemOne.promisedWithOption).to.be.undefined
+    expect(this.itemTwo.promisedWithOption).to.equal(true)
   })
 
   it('should not store the computed property', function() {
